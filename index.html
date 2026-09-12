@@ -13,17 +13,13 @@
 </head>
 <body class="bg-[#f9f9f9] text-zinc-900 min-h-screen pb-20">
 
-  <!-- NOTIFICAÇÃO AO COPIAR -->
   <div id="toast" class="fixed bottom-6 left-6 z-50 transform translate-y-20 opacity-0 transition-all duration-200 bg-zinc-900 text-white font-medium px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3 text-sm">
     <i class="fa-solid fa-circle-check text-emerald-400"></i>
     <span>Prompt copiado com sucesso!</span>
   </div>
 
-  <!-- HEADER YOUTUBE -->
   <header class="border-b border-zinc-200 bg-white sticky top-0 z-40 px-6 py-2.5">
     <div class="max-w-[1700px] mx-auto flex items-center justify-between gap-6">
-      
-      <!-- LOGO -->
       <div class="flex items-center gap-2 cursor-pointer select-none">
         <div class="w-9 h-6 bg-red-600 rounded-md flex items-center justify-center text-white shadow-sm">
           <i class="fa-solid fa-play text-xs ml-0.5"></i>
@@ -31,26 +27,21 @@
         <span class="font-bold tracking-tight text-lg text-zinc-900">Prompt<span class="text-zinc-500 font-normal ml-1">Vault</span></span>
       </div>
 
-      <!-- BUSCA -->
       <div class="flex-1 max-w-2xl flex items-center justify-center">
         <div class="w-full flex items-center border border-zinc-300 rounded-full overflow-hidden focus-within:border-blue-600 transition shadow-inner bg-white">
-          <input type="text" id="searchInput" placeholder="Pesquisar por tag (#Bengus, #Aquarela)..." 
+          <input type="text" id="searchInput" placeholder="Buscar qualquer palavra no prompt (Junji, Bengus, Nanquim...)" 
                  class="w-full text-zinc-900 text-sm px-5 py-2.5 focus:outline-none bg-transparent">
           <button class="bg-zinc-100 hover:bg-zinc-200 border-l border-zinc-300 px-6 py-2.5 text-zinc-600 transition">
             <i class="fa-solid fa-search text-xs"></i>
           </button>
         </div>
       </div>
-
       <div class="w-9 hidden sm:block"></div>
     </div>
   </header>
 
-  <!-- GRID EXPANDIDO (CARDS GRANDES: 2 a 3 COLUNAS) -->
   <main class="max-w-[1700px] mx-auto px-6 py-8">
-    <div id="feedGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-8">
-      <!-- Cards renderizados via JS -->
-    </div>
+    <div id="feedGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-8"></div>
   </main>
 
   <script>
@@ -62,10 +53,7 @@
         promptsData = await response.json();
         render(promptsData);
       } catch (err) {
-        document.getElementById('feedGrid').innerHTML = `
-          <div class="col-span-full py-12 text-center text-zinc-400 text-sm">
-            Nenhum prompt encontrado ou erro ao ler prompts.json.
-          </div>`;
+        document.getElementById('feedGrid').innerHTML = `<div class="col-span-full py-12 text-center text-zinc-400 text-sm">Nenhum prompt encontrado.</div>`;
       }
     }
 
@@ -74,7 +62,7 @@
       grid.innerHTML = '';
 
       if (items.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-12 text-center text-zinc-400 text-sm">Nenhuma arte encontrada.</div>`;
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-zinc-400 text-sm">Nenhuma arte encontrada para essa busca.</div>`;
         return;
       }
 
@@ -83,9 +71,8 @@
         card.className = "flex flex-col bg-white rounded-2xl p-3 border border-zinc-200 shadow-sm hover:shadow-md transition-shadow";
 
         card.innerHTML = `
-          <!-- THUMBNAIL 16:9 GRANDE -->
           <a href="${item.image}" target="_blank" rel="noopener noreferrer" class="relative block w-full aspect-video bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200/80 group">
-            <img src="${item.image}" alt="Arte" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" onerror="this.src='https://placehold.co/800x450/f4f4f5/71717a?text=Suba+a+Imagem+no+Git'">
+            <img src="${item.image}" alt="Arte" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]">
             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition flex items-center justify-center">
               <span class="opacity-0 group-hover:opacity-100 transition bg-zinc-900/85 text-white text-xs font-medium px-3 py-1.5 rounded-lg backdrop-blur shadow-lg">
                 <i class="fa-solid fa-arrow-up-right-from-square text-[11px] mr-1.5"></i> Abrir Imagem Original
@@ -93,17 +80,10 @@
             </div>
           </a>
 
-          <!-- RODAPÉ: TAGS + BOTÃO COPIAR -->
-          <div class="mt-3.5 px-1 flex items-center justify-between gap-3">
-            <!-- Chips de Tags -->
-            <div class="flex flex-wrap gap-1.5">
-              ${item.tags.map(t => `<span class="text-xs font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 px-2.5 py-1 rounded-md border border-zinc-200 transition">#${t}</span>`).join('')}
-            </div>
-
-            <!-- Botão Copiar Estilo YouTube -->
-            <button onclick="copyPrompt(${index})" class="bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-white font-medium text-xs px-4 py-2 rounded-full flex items-center gap-1.5 transition shadow-sm shrink-0">
+          <div class="mt-3 px-1">
+            <button onclick="copyPrompt(${index})" class="w-full bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white font-medium text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 transition shadow-sm">
               <i class="fa-regular fa-copy"></i>
-              <span>Copiar</span>
+              <span>Copiar Prompt</span>
             </button>
           </div>
         `;
@@ -126,10 +106,7 @@
 
     document.getElementById('searchInput').addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase();
-      const filtered = promptsData.filter(item => 
-        item.tags.some(t => t.toLowerCase().includes(q)) ||
-        item.prompt.toLowerCase().includes(q)
-      );
+      const filtered = promptsData.filter(item => item.prompt.toLowerCase().includes(q));
       render(filtered);
     });
 
