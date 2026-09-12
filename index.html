@@ -225,6 +225,7 @@
       return Boolean(localStorage.getItem('pv_token'));
     }
 
+    // HEADERS 100% COMPATÍVEIS COM O CORS DO GITHUB
     function getAuthHeaders() {
       const token = localStorage.getItem('pv_token') || '';
       return {
@@ -409,7 +410,7 @@
       if (file) processFile(file);
     });
 
-    // PUBLICAR NOVA ARTE COM ROLLBACK AUTOMÁTICO E FALLBACK DE PROMPT
+    // PUBLICAR NOVA ARTE COM ROLLBACK AUTOMÁTICO E FALLBACK
     async function publishNewArt() {
       if (!hasOwnerToken()) { openConfigModal(); return; }
       hideBanner('uploadErrorBanner');
@@ -429,14 +430,12 @@
       const headers = getAuthHeaders();
 
       try {
-        // 1. Calcula próximo ID
         let nextId = 1;
         promptsData.forEach(p => {
           const num = parseInt(p.id, 10);
           if (!isNaN(num) && num >= nextId) nextId = num + 1;
         });
 
-        // 2. Prompt Curinga se estiver vazio
         let promptText = document.getElementById('promptInput').value.trim();
         if (!promptText) {
           promptText = `[Arte #${nextId} - Sem prompt cadastrado]`;
@@ -445,7 +444,7 @@
         const imgFileName = `${nextId}.${selectedImageExt}`;
         uploadedImgPath = `images/${imgFileName}`;
 
-        // 3. Subir Imagem
+        // 1. Subir Imagem
         const imgUploadRes = await fetch(`https://api.github.com/repos/${repo}/contents/${uploadedImgPath}`, {
           method: 'PUT',
           headers,
@@ -461,9 +460,9 @@
         }
         uploadedImgSha = imgUploadData.content?.sha;
 
-        // 4. Buscar SHA atual do prompts.json
-        const jsonGetRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json`, {
-          headers: { ...headers, 'Cache-Control': 'no-cache' }
+        // 2. Buscar SHA atual do prompts.json
+        const jsonGetRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json?t=${Date.now()}`, {
+          headers
         });
         const jsonGetData = await jsonGetRes.json();
         if (!jsonGetRes.ok) {
@@ -471,7 +470,7 @@
         }
         const jsonSha = jsonGetData.sha;
 
-        // 5. Adiciona e salva JSON
+        // 3. Adiciona e salva JSON
         const newItem = {
           id: String(nextId),
           image: uploadedImgPath,
@@ -497,14 +496,12 @@
           throw new Error(parseGitHubError(jsonPutRes.status, jsonPutData));
         }
 
-        // Sucesso total
         render(promptsData);
         closeUploadModal();
         showToast(`Arte #${nextId} publicada com sucesso!`);
 
       } catch (err) {
         console.error(err);
-        // ROLLBACK AUTOMÁTICO: se subiu imagem mas falhou no json, apaga a foto
         if (uploadedImgPath && uploadedImgSha) {
           try {
             await fetch(`https://api.github.com/repos/${repo}/contents/${uploadedImgPath}`, {
@@ -512,10 +509,7 @@
               headers,
               body: JSON.stringify({ message: `Rollback arte falha`, sha: uploadedImgSha })
             });
-            console.log("Rollback executado: imagem órfã removida.");
-          } catch (rbErr) {
-            console.error("Falha no rollback:", rbErr);
-          }
+          } catch (rbErr) {}
         }
         showBanner('uploadErrorBanner', 'uploadErrorMsg', err.message);
       } finally {
@@ -559,8 +553,8 @@
       const headers = getAuthHeaders();
 
       try {
-        const jsonGetRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json`, {
-          headers: { ...headers, 'Cache-Control': 'no-cache' }
+        const jsonGetRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json?t=${Date.now()}`, {
+          headers
         });
         const jsonGetData = await jsonGetRes.json();
         if (!jsonGetRes.ok) throw new Error(parseGitHubError(jsonGetRes.status, jsonGetData));
@@ -621,9 +615,8 @@
       const headers = getAuthHeaders();
 
       try {
-        // 1. Achar SHA do arquivo de imagem e deletar
-        const fileRes = await fetch(`https://api.github.com/repos/${repo}/contents/${item.image}`, {
-          headers: { ...headers, 'Cache-Control': 'no-cache' }
+        const fileRes = await fetch(`https://api.github.com/repos/${repo}/contents/${item.image}?t=${Date.now()}`, {
+          headers
         });
         if (fileRes.ok) {
           const fileData = await fileRes.json();
@@ -639,9 +632,8 @@
           }
         }
 
-        // 2. Atualizar prompts.json sem o item
-        const jsonGetRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json`, {
-          headers: { ...headers, 'Cache-Control': 'no-cache' }
+        const jsonGetRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json?t=${Date.now()}`, {
+          headers
         });
         const jsonGetData = await jsonGetRes.json();
         if (!jsonGetRes.ok) throw new Error(parseGitHubError(jsonGetRes.status, jsonGetData));
@@ -704,7 +696,6 @@
       showToast("Chave removida. Modo visitante ativo.");
     }
 
-    // UTILITÁRIOS DE BANNER DE ERRO
     function showBanner(containerId, textId, msg) {
       document.getElementById(textId).innerText = msg;
       document.getElementById(containerId).classList.remove('hidden');
