@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- BLINDAGEM CONTRA GOOGLE E BUSCADORES -->
+  <meta name="robots" content="noindex, nofollow">
+  
   <title>Prompt Vault</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,7 +26,7 @@
   <header class="border-b border-zinc-200 bg-white sticky top-0 z-40 px-6 py-2.5">
     <div class="max-w-[1700px] mx-auto flex items-center justify-between gap-4">
       
-      <!-- LOGO -->
+      <!-- LOGO (CÓDIGO PURO: RETÂNGULO CSS + PLAY VETORIAL) -->
       <div class="flex items-center gap-2 cursor-pointer select-none" onclick="location.reload()">
         <div class="w-9 h-6 bg-red-600 rounded-md flex items-center justify-center text-white shadow-sm">
           <i class="fa-solid fa-play text-xs ml-0.5"></i>
@@ -225,7 +228,6 @@
       return Boolean(localStorage.getItem('pv_token'));
     }
 
-    // HEADERS 100% COMPATÍVEIS COM O CORS DO GITHUB
     function getAuthHeaders() {
       const token = localStorage.getItem('pv_token') || '';
       return {
