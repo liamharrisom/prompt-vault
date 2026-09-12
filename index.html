@@ -13,7 +13,7 @@
 </head>
 <body class="bg-[#f9f9f9] text-zinc-900 min-h-screen pb-20">
 
-  <!-- TOAST -->
+  <!-- TOAST NOTIFICATION -->
   <div id="toast" class="fixed bottom-6 left-6 z-50 transform translate-y-20 opacity-0 transition-all duration-200 bg-zinc-900 text-white font-medium px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3 text-sm">
     <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
     <span id="toastMsg">Prompt copiado com sucesso!</span>
@@ -55,12 +55,12 @@
     </div>
   </header>
 
-  <!-- FEED -->
+  <!-- FEED DE CARDS -->
   <main class="max-w-[1700px] mx-auto px-6 py-8">
     <div id="feedGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-8"></div>
   </main>
 
-  <!-- MODAL DE UPLOAD DIRETO -->
+  <!-- MODAL DE UPLOAD / CRIAR -->
   <div id="uploadModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-zinc-200 flex flex-col max-h-[90vh]">
       <div class="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
@@ -72,9 +72,13 @@
       </div>
 
       <div class="p-6 overflow-y-auto space-y-4">
-        <!-- ZONA DA IMAGEM -->
+        <div id="uploadErrorBanner" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2">
+          <i class="fa-solid fa-circle-exclamation text-sm shrink-0"></i>
+          <span id="uploadErrorMsg"></span>
+        </div>
+
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Imagem (Clique, Arraste ou dê Ctrl+V)</label>
+          <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Imagem (Clique, Arraste ou Ctrl+V)</label>
           <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="relative border-2 border-dashed border-zinc-300 hover:border-zinc-500 rounded-xl p-4 flex flex-col items-center justify-center min-h-[180px] bg-zinc-50 cursor-pointer transition overflow-hidden">
             <img id="imagePreview" class="max-h-48 rounded-lg object-contain hidden" src="" alt="Preview">
             <div id="dropPrompt" class="text-center">
@@ -86,10 +90,12 @@
           </div>
         </div>
 
-        <!-- CAMPO DO PROMPT -->
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Texto Completo do Prompt</label>
-          <textarea id="promptInput" rows="7" placeholder="Cole aqui o prompt que gerou a imagem..." 
+          <div class="flex justify-between items-center mb-1.5">
+            <label class="text-xs font-bold uppercase tracking-wider text-zinc-500">Texto do Prompt</label>
+            <span class="text-[11px] text-zinc-400">(Opcional: se deixar em branco, cria placeholder)</span>
+          </div>
+          <textarea id="promptInput" rows="6" placeholder="Cole aqui o prompt... (ou deixe vazio para preencher depois)" 
                     class="w-full text-xs font-mono bg-zinc-50 border border-zinc-200 rounded-xl p-3 focus:outline-none focus:border-zinc-800 text-zinc-800"></textarea>
         </div>
       </div>
@@ -104,32 +110,103 @@
     </div>
   </div>
 
+  <!-- MODAL DE EDIÇÃO DO PROMPT -->
+  <div id="editModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl border border-zinc-200 flex flex-col max-h-[90vh]">
+      <div class="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+        <h3 class="font-bold text-base text-zinc-900 flex items-center gap-2">
+          <i class="fa-solid fa-pen-to-square text-amber-500"></i>
+          <span id="editModalTitle">Editar Prompt</span>
+        </h3>
+        <button onclick="closeEditModal()" class="text-zinc-400 hover:text-zinc-700 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4">
+        <div id="editErrorBanner" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2">
+          <i class="fa-solid fa-circle-exclamation text-sm shrink-0"></i>
+          <span id="editErrorMsg"></span>
+        </div>
+
+        <div class="flex items-center gap-3 p-2 bg-zinc-50 rounded-xl border border-zinc-200">
+          <img id="editModalImg" class="w-20 h-12 object-cover rounded-lg" src="" alt="Thumbnail">
+          <span id="editModalIdLabel" class="text-xs font-bold text-zinc-600"></span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Prompt da Arte</label>
+          <textarea id="editPromptInput" rows="8" class="w-full text-xs font-mono bg-zinc-50 border border-zinc-200 rounded-xl p-3 focus:outline-none focus:border-zinc-800 text-zinc-800"></textarea>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-zinc-100 bg-zinc-50 flex items-center justify-between">
+        <button onclick="closeEditModal()" class="text-xs font-medium text-zinc-600 hover:text-zinc-900 px-3 py-2">Cancelar</button>
+        <button id="btnSaveEdit" onclick="savePromptEdit()" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs px-5 py-2.5 rounded-full flex items-center gap-2 shadow transition active:scale-95">
+          <i class="fa-solid fa-floppy-disk"></i>
+          <span>Salvar Alterações</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMAÇÃO DE DELEÇÃO -->
+  <div id="deleteModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-zinc-200 space-y-4">
+      <div class="flex items-center gap-3 text-rose-600">
+        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center">
+          <i class="fa-solid fa-trash-can text-lg"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-base text-zinc-900">Excluir Arte</h3>
+          <p id="deleteItemLabel" class="text-xs text-zinc-500"></p>
+        </div>
+      </div>
+
+      <p class="text-xs text-zinc-600 leading-relaxed">
+        Tem certeza que deseja apagar esta arte? O arquivo de imagem será excluído do GitHub e o prompt será removido permanentemente.
+      </p>
+
+      <div id="deleteErrorBanner" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2">
+        <i class="fa-solid fa-circle-exclamation text-sm shrink-0"></i>
+        <span id="deleteErrorMsg"></span>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeDeleteModal()" class="text-xs font-medium text-zinc-600 hover:text-zinc-900 px-4 py-2">Cancelar</button>
+        <button id="btnConfirmDelete" onclick="executeDelete()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-5 py-2 rounded-xl transition flex items-center gap-1.5 shadow">
+          <i class="fa-regular fa-trash-can"></i>
+          <span>Confirmar Exclusão</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL DE CONFIGURAÇÃO DO TOKEN -->
   <div id="configModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-zinc-200 space-y-4">
       <div class="flex items-center justify-between">
         <h3 class="font-bold text-base text-zinc-900 flex items-center gap-2">
           <i class="fa-solid fa-key text-amber-500"></i>
-          Configurar GitHub
+          Configurar Acesso GitHub
         </h3>
         <button onclick="closeConfigModal()" class="text-zinc-400 hover:text-zinc-700 text-lg"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <p class="text-xs text-zinc-500 leading-relaxed">
-        Cole seu token do GitHub uma única vez para autorizar publicações direto pelo site. Ele fica salvo apenas no seu navegador.
+        Sua chave fica gravada apenas neste navegador. Com ela ativa, você pode criar, editar e excluir artes direto pela página.
       </p>
 
       <div>
-        <label class="block text-xs font-bold text-zinc-700 mb-1">Repositório</label>
-        <input type="text" id="cfgRepo" value="liamharrisom/prompt-vault" class="w-full text-xs bg-zinc-50 border border-zinc-300 rounded-lg p-2.5 text-zinc-800">
+        <label class="block text-xs font-bold text-zinc-700 mb-1">Repositório (owner/repo)</label>
+        <input type="text" id="cfgRepo" value="liamharrisom/prompt-vault" class="w-full text-xs bg-zinc-50 border border-zinc-300 rounded-lg p-2.5 text-zinc-800 font-mono">
       </div>
 
       <div>
         <label class="block text-xs font-bold text-zinc-700 mb-1">Personal Access Token (ghp_...)</label>
-        <input type="password" id="cfgToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full text-xs bg-zinc-50 border border-zinc-300 rounded-lg p-2.5 text-zinc-800">
+        <input type="password" id="cfgToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full text-xs bg-zinc-50 border border-zinc-300 rounded-lg p-2.5 text-zinc-800 font-mono">
       </div>
 
-      <div class="flex justify-end gap-2 pt-2">
+      <div class="flex justify-between items-center pt-2">
+        <button onclick="clearConfig()" class="text-rose-600 hover:text-rose-700 text-xs font-medium">Remover Chave</button>
         <button onclick="saveConfig()" class="bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs px-4 py-2 rounded-lg transition">Salvar Chave</button>
       </div>
     </div>
@@ -140,7 +217,35 @@
     let selectedImageFile = null;
     let selectedImageBase64 = null;
     let selectedImageExt = 'jpeg';
+    
+    let activeEditId = null;
+    let activeDeleteId = null;
 
+    function hasOwnerToken() {
+      return Boolean(localStorage.getItem('pv_token'));
+    }
+
+    function getAuthHeaders() {
+      const token = localStorage.getItem('pv_token') || '';
+      return {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github+json'
+      };
+    }
+
+    function getRepo() {
+      return localStorage.getItem('pv_repo') || 'liamharrisom/prompt-vault';
+    }
+
+    function parseGitHubError(status, errData) {
+      if (status === 401) return "Token inválido ou expirado! Clique na engrenagem ⚙️ para atualizar.";
+      if (status === 404) return "Repositório ou arquivo não encontrado no GitHub. Verifique a engrenagem ⚙️.";
+      if (status === 409) return "Conflito de versão no Git! Aguarde alguns segundos e tente novamente.";
+      return errData?.message || "Erro de comunicação com o GitHub.";
+    }
+
+    // CARREGAR DADOS
     async function loadPrompts() {
       try {
         const response = await fetch('./prompts.json?t=' + Date.now());
@@ -151,31 +256,50 @@
       }
     }
 
+    // RENDERIZAR
     function render(items) {
       const grid = document.getElementById('feedGrid');
       grid.innerHTML = '';
 
       if (items.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-12 text-center text-zinc-400 text-sm">Nenhuma arte encontrada.</div>`;
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-zinc-400 text-sm">Nenhuma arte encontrada para esta busca.</div>`;
         return;
       }
 
-      items.forEach((item, index) => {
+      const showAdminButtons = hasOwnerToken();
+
+      items.forEach((item) => {
         const card = document.createElement('div');
-        card.className = "flex flex-col bg-white rounded-2xl p-3 border border-zinc-200 shadow-sm hover:shadow-md transition-shadow";
+        card.className = "flex flex-col bg-white rounded-2xl p-3 border border-zinc-200 shadow-sm hover:shadow-md transition-shadow relative group";
 
         card.innerHTML = `
-          <a href="${item.image}" target="_blank" rel="noopener noreferrer" class="relative block w-full aspect-video bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200/80 group">
-            <img src="${item.image}" alt="Arte" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]">
-            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition flex items-center justify-center">
-              <span class="opacity-0 group-hover:opacity-100 transition bg-zinc-900/85 text-white text-xs font-medium px-3 py-1.5 rounded-lg backdrop-blur shadow-lg">
-                <i class="fa-solid fa-arrow-up-right-from-square text-[11px] mr-1.5"></i> Abrir Imagem Original
-              </span>
-            </div>
-          </a>
+          <!-- THUMBNAIL 16:9 -->
+          <div class="relative w-full aspect-video bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200/80">
+            <a href="${item.image}" target="_blank" rel="noopener noreferrer" class="block w-full h-full">
+              <img src="${item.image}" alt="Arte #${item.id}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]">
+              <div class="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition flex items-center justify-center pointer-events-none">
+                <span class="opacity-0 group-hover:opacity-100 transition bg-zinc-900/85 text-white text-xs font-medium px-3 py-1.5 rounded-lg backdrop-blur shadow-lg">
+                  <i class="fa-solid fa-arrow-up-right-from-square text-[11px] mr-1.5"></i> Abrir Imagem Original
+                </span>
+              </div>
+            </a>
 
+            <!-- AÇÕES OWNER NO HOVER: LÁPIS & LIXEIRA -->
+            ${showAdminButtons ? `
+              <div class="absolute top-2.5 right-2.5 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition duration-200 z-10">
+                <button onclick="openEditModal('${item.id}')" title="Editar Prompt" class="w-8 h-8 rounded-full bg-zinc-900/80 hover:bg-zinc-900 text-white backdrop-blur flex items-center justify-center shadow transition active:scale-95">
+                  <i class="fa-solid fa-pen text-xs"></i>
+                </button>
+                <button onclick="openDeleteModal('${item.id}')" title="Excluir Arte" class="w-8 h-8 rounded-full bg-rose-600/80 hover:bg-rose-600 text-white backdrop-blur flex items-center justify-center shadow transition active:scale-95">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- BOTÃO COPIAR -->
           <div class="mt-3 px-1">
-            <button onclick="copyPrompt(${index})" class="w-full bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white font-medium text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 transition shadow-sm">
+            <button onclick="copyPrompt('${item.id}')" class="w-full bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white font-medium text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 transition shadow-sm">
               <i class="fa-regular fa-copy"></i>
               <span>Copiar Prompt</span>
             </button>
@@ -185,9 +309,10 @@
       });
     }
 
-    function copyPrompt(index) {
-      const text = promptsData[index].prompt;
-      navigator.clipboard.writeText(text).then(() => {
+    function copyPrompt(id) {
+      const item = promptsData.find(p => String(p.id) === String(id));
+      if (!item) return;
+      navigator.clipboard.writeText(item.prompt).then(() => {
         showToast("Prompt copiado com sucesso!");
       });
     }
@@ -196,7 +321,6 @@
       const toast = document.getElementById('toast');
       const icon = document.getElementById('toastIcon');
       document.getElementById('toastMsg').innerText = msg;
-      
       icon.className = isError ? "fa-solid fa-circle-xmark text-rose-400" : "fa-solid fa-circle-check text-emerald-400";
       toast.classList.remove('translate-y-20', 'opacity-0');
       toast.classList.add('translate-y-0', 'opacity-100');
@@ -213,14 +337,14 @@
       render(filtered);
     });
 
-    // CONTROLE DE MODAL UPLOAD
+    // UPLOAD / CRIAR
     function openUploadModal() {
-      const token = localStorage.getItem('pv_token');
-      if (!token) {
+      if (!hasOwnerToken()) {
         openConfigModal();
         showToast("Configure seu token do GitHub primeiro!", true);
         return;
       }
+      hideBanner('uploadErrorBanner');
       document.getElementById('uploadModal').classList.remove('hidden');
     }
 
@@ -238,7 +362,6 @@
       document.getElementById('dropPrompt').classList.remove('hidden');
     }
 
-    // ARQUIVOS: SELEÇÃO E DRAG & DROP
     function handleFileSelect(event) {
       const file = event.target.files[0];
       if (file) processFile(file);
@@ -246,9 +369,10 @@
 
     function processFile(file) {
       if (!file.type.startsWith('image/')) {
-        alert('Por favor, selecione um arquivo de imagem.');
+        showBanner('uploadErrorBanner', 'uploadErrorMsg', 'Por favor, selecione um arquivo de imagem.');
         return;
       }
+      hideBanner('uploadErrorBanner');
       selectedImageFile = file;
       selectedImageExt = file.name.split('.').pop().toLowerCase() || 'jpeg';
       if (selectedImageExt === 'jpg') selectedImageExt = 'jpeg';
@@ -263,7 +387,6 @@
       reader.readAsDataURL(file);
     }
 
-    // SUPORTE A CTRL+V DE IMAGEM
     window.addEventListener('paste', (e) => {
       if (document.getElementById('uploadModal').classList.contains('hidden')) return;
       const items = e.clipboardData?.items;
@@ -278,20 +401,281 @@
       }
     });
 
-    // DRAG AND DROP
     const dropZone = document.getElementById('dropZone');
-    ['dragenter', 'dragover'].forEach(name => {
-      dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.add('border-zinc-800'); });
-    });
-    ['dragleave', 'drop'].forEach(name => {
-      dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.remove('border-zinc-800'); });
-    });
+    ['dragenter', 'dragover'].forEach(n => dropZone.addEventListener(n, e => { e.preventDefault(); dropZone.classList.add('border-zinc-800'); }));
+    ['dragleave', 'drop'].forEach(n => dropZone.addEventListener(n, e => { e.preventDefault(); dropZone.classList.remove('border-zinc-800'); }));
     dropZone.addEventListener('drop', (e) => {
       const file = e.dataTransfer.files[0];
       if (file) processFile(file);
     });
 
-    // CONFIGURAÇÃO TOKEN
+    // PUBLICAR NOVA ARTE COM ROLLBACK AUTOMÁTICO E FALLBACK DE PROMPT
+    async function publishNewArt() {
+      if (!hasOwnerToken()) { openConfigModal(); return; }
+      hideBanner('uploadErrorBanner');
+
+      if (!selectedImageBase64) {
+        showBanner('uploadErrorBanner', 'uploadErrorMsg', 'Selecione ou cole uma imagem primeiro!');
+        return;
+      }
+
+      const btn = document.getElementById('btnPublish');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>Publicando...</span>`;
+
+      let uploadedImgPath = null;
+      let uploadedImgSha = null;
+      const repo = getRepo();
+      const headers = getAuthHeaders();
+
+      try {
+        // 1. Calcula próximo ID
+        let nextId = 1;
+        promptsData.forEach(p => {
+          const num = parseInt(p.id, 10);
+          if (!isNaN(num) && num >= nextId) nextId = num + 1;
+        });
+
+        // 2. Prompt Curinga se estiver vazio
+        let promptText = document.getElementById('promptInput').value.trim();
+        if (!promptText) {
+          promptText = `[Arte #${nextId} - Sem prompt cadastrado]`;
+        }
+
+        const imgFileName = `${nextId}.${selectedImageExt}`;
+        uploadedImgPath = `images/${imgFileName}`;
+
+        // 3. Subir Imagem
+        const imgUploadRes = await fetch(`https://api.github.com/repos/${repo}/contents/${uploadedImgPath}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({
+            message: `Upload arte #${nextId} via Web`,
+            content: selectedImageBase64
+          })
+        });
+
+        const imgUploadData = await imgUploadRes.json();
+        if (!imgUploadRes.ok) {
+          throw new Error(parseGitHubError(imgUploadRes.status, imgUploadData));
+        }
+        uploadedImgSha = imgUploadData.content?.sha;
+
+        // 4. Buscar SHA atual do prompts.json
+        const jsonGetRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json`, {
+          headers: { ...headers, 'Cache-Control': 'no-cache' }
+        });
+        const jsonGetData = await jsonGetRes.json();
+        if (!jsonGetRes.ok) {
+          throw new Error(parseGitHubError(jsonGetRes.status, jsonGetData));
+        }
+        const jsonSha = jsonGetData.sha;
+
+        // 5. Adiciona e salva JSON
+        const newItem = {
+          id: String(nextId),
+          image: uploadedImgPath,
+          prompt: promptText
+        };
+        promptsData.push(newItem);
+
+        const updatedJsonStr = JSON.stringify(promptsData, null, 2);
+        const jsonBase64 = btoa(unescape(encodeURIComponent(updatedJsonStr)));
+
+        const jsonPutRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({
+            message: `Adiciona prompt #${nextId} via Web`,
+            content: jsonBase64,
+            sha: jsonSha
+          })
+        });
+
+        const jsonPutData = await jsonPutRes.json();
+        if (!jsonPutRes.ok) {
+          throw new Error(parseGitHubError(jsonPutRes.status, jsonPutData));
+        }
+
+        // Sucesso total
+        render(promptsData);
+        closeUploadModal();
+        showToast(`Arte #${nextId} publicada com sucesso!`);
+
+      } catch (err) {
+        console.error(err);
+        // ROLLBACK AUTOMÁTICO: se subiu imagem mas falhou no json, apaga a foto
+        if (uploadedImgPath && uploadedImgSha) {
+          try {
+            await fetch(`https://api.github.com/repos/${repo}/contents/${uploadedImgPath}`, {
+              method: 'DELETE',
+              headers,
+              body: JSON.stringify({ message: `Rollback arte falha`, sha: uploadedImgSha })
+            });
+            console.log("Rollback executado: imagem órfã removida.");
+          } catch (rbErr) {
+            console.error("Falha no rollback:", rbErr);
+          }
+        }
+        showBanner('uploadErrorBanner', 'uploadErrorMsg', err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i><span>Publicar no Vault</span>`;
+      }
+    }
+
+    // MODAL DE EDIÇÃO
+    function openEditModal(id) {
+      activeEditId = id;
+      const item = promptsData.find(p => String(p.id) === String(id));
+      if (!item) return;
+
+      hideBanner('editErrorBanner');
+      document.getElementById('editModalTitle').innerText = `Editar Prompt da Arte #${item.id}`;
+      document.getElementById('editModalIdLabel').innerText = `Arte #${item.id}`;
+      document.getElementById('editModalImg').src = item.image;
+      document.getElementById('editPromptInput').value = item.prompt;
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+      activeEditId = null;
+    }
+
+    async function savePromptEdit() {
+      if (!activeEditId) return;
+      const newPromptText = document.getElementById('editPromptInput').value.trim();
+      if (!newPromptText) {
+        showBanner('editErrorBanner', 'editErrorMsg', 'O prompt não pode ficar totalmente vazio.');
+        return;
+      }
+
+      const btn = document.getElementById('btnSaveEdit');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>Salvando...</span>`;
+
+      const repo = getRepo();
+      const headers = getAuthHeaders();
+
+      try {
+        const jsonGetRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json`, {
+          headers: { ...headers, 'Cache-Control': 'no-cache' }
+        });
+        const jsonGetData = await jsonGetRes.json();
+        if (!jsonGetRes.ok) throw new Error(parseGitHubError(jsonGetRes.status, jsonGetData));
+
+        const item = promptsData.find(p => String(p.id) === String(activeEditId));
+        if (item) item.prompt = newPromptText;
+
+        const updatedJsonStr = JSON.stringify(promptsData, null, 2);
+        const jsonBase64 = btoa(unescape(encodeURIComponent(updatedJsonStr)));
+
+        const jsonPutRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({
+            message: `Edita prompt #${activeEditId} via Web`,
+            content: jsonBase64,
+            sha: jsonGetData.sha
+          })
+        });
+        const jsonPutData = await jsonPutRes.json();
+        if (!jsonPutRes.ok) throw new Error(parseGitHubError(jsonPutRes.status, jsonPutData));
+
+        render(promptsData);
+        closeEditModal();
+        showToast(`Prompt #${activeEditId} atualizado com sucesso!`);
+      } catch (err) {
+        console.error(err);
+        showBanner('editErrorBanner', 'editErrorMsg', err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i><span>Salvar Alterações</span>`;
+      }
+    }
+
+    // MODAL DE DELEÇÃO
+    function openDeleteModal(id) {
+      activeDeleteId = id;
+      hideBanner('deleteErrorBanner');
+      document.getElementById('deleteItemLabel').innerText = `Arte selecionada: #${id}`;
+      document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').classList.add('hidden');
+      activeDeleteId = null;
+    }
+
+    async function executeDelete() {
+      if (!activeDeleteId) return;
+      const item = promptsData.find(p => String(p.id) === String(activeDeleteId));
+      if (!item) return;
+
+      const btn = document.getElementById('btnConfirmDelete');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>Excluindo...</span>`;
+
+      const repo = getRepo();
+      const headers = getAuthHeaders();
+
+      try {
+        // 1. Achar SHA do arquivo de imagem e deletar
+        const fileRes = await fetch(`https://api.github.com/repos/${repo}/contents/${item.image}`, {
+          headers: { ...headers, 'Cache-Control': 'no-cache' }
+        });
+        if (fileRes.ok) {
+          const fileData = await fileRes.json();
+          if (fileData.sha) {
+            await fetch(`https://api.github.com/repos/${repo}/contents/${item.image}`, {
+              method: 'DELETE',
+              headers,
+              body: JSON.stringify({
+                message: `Exclui imagem da arte #${activeDeleteId}`,
+                sha: fileData.sha
+              })
+            });
+          }
+        }
+
+        // 2. Atualizar prompts.json sem o item
+        const jsonGetRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json`, {
+          headers: { ...headers, 'Cache-Control': 'no-cache' }
+        });
+        const jsonGetData = await jsonGetRes.json();
+        if (!jsonGetRes.ok) throw new Error(parseGitHubError(jsonGetRes.status, jsonGetData));
+
+        promptsData = promptsData.filter(p => String(p.id) !== String(activeDeleteId));
+
+        const updatedJsonStr = JSON.stringify(promptsData, null, 2);
+        const jsonBase64 = btoa(unescape(encodeURIComponent(updatedJsonStr)));
+
+        const jsonPutRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({
+            message: `Remove prompt #${activeDeleteId}`,
+            content: jsonBase64,
+            sha: jsonGetData.sha
+          })
+        });
+        const jsonPutData = await jsonPutRes.json();
+        if (!jsonPutRes.ok) throw new Error(parseGitHubError(jsonPutRes.status, jsonPutData));
+
+        render(promptsData);
+        closeDeleteModal();
+        showToast(`Arte #${activeDeleteId} removida com sucesso!`);
+      } catch (err) {
+        console.error(err);
+        showBanner('deleteErrorBanner', 'deleteErrorMsg', err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-regular fa-trash-can"></i><span>Confirmar Exclusão</span>`;
+      }
+    }
+
+    // CONFIGURAÇÕES
     function openConfigModal() {
       document.getElementById('cfgRepo').value = localStorage.getItem('pv_repo') || 'liamharrisom/prompt-vault';
       document.getElementById('cfgToken').value = localStorage.getItem('pv_token') || '';
@@ -309,107 +693,25 @@
       localStorage.setItem('pv_repo', repo);
       localStorage.setItem('pv_token', token);
       closeConfigModal();
-      showToast("Configuração salva com sucesso!");
+      render(promptsData);
+      showToast("Configurações salvas! Controles de dono ativados.");
     }
 
-    // ENVIAR DIRETO PRO GITHUB VIA API
-    async function publishNewArt() {
-      const token = localStorage.getItem('pv_token');
-      const repo = localStorage.getItem('pv_repo') || 'liamharrisom/prompt-vault';
-      const prompt = document.getElementById('promptInput').value.trim();
+    function clearConfig() {
+      localStorage.removeItem('pv_token');
+      closeConfigModal();
+      render(promptsData);
+      showToast("Chave removida. Modo visitante ativo.");
+    }
 
-      if (!token) { openConfigModal(); return; }
-      if (!selectedImageBase64) { alert('Selecione ou cole uma imagem primeiro!'); return; }
-      if (!prompt) { alert('Digite ou cole o texto do prompt!'); return; }
+    // UTILITÁRIOS DE BANNER DE ERRO
+    function showBanner(containerId, textId, msg) {
+      document.getElementById(textId).innerText = msg;
+      document.getElementById(containerId).classList.remove('hidden');
+    }
 
-      const btn = document.getElementById('btnPublish');
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>Publicando...</span>`;
-
-      try {
-        // 1. Descobrir o próximo ID numérico
-        let nextId = 1;
-        promptsData.forEach(p => {
-          const num = parseInt(p.id, 10);
-          if (!isNaN(num) && num >= nextId) nextId = num + 1;
-        });
-
-        const imgFileName = `${nextId}.${selectedImageExt}`;
-        const imgPath = `images/${imgFileName}`;
-
-        // 2. Subir imagem para GitHub
-        const imgUploadRes = await fetch(`https://api.github.com/repos/${repo}/contents/${imgPath}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/vnd.github+json'
-          },
-          body: JSON.stringify({
-            message: `Upload arte #${nextId} via Web`,
-            content: selectedImageBase64
-          })
-        });
-
-        if (!imgUploadRes.ok) {
-          const err = await imgUploadRes.json();
-          throw new Error('Falha no upload da imagem: ' + (err.message || imgUploadRes.statusText));
-        }
-
-        // 3. Pegar o SHA atual de prompts.json
-        const jsonGetRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/vnd.github+json'
-          }
-        });
-        const jsonGetData = await jsonGetRes.json();
-        const jsonSha = jsonGetData.sha;
-
-        // 4. Montar a lista atualizada
-        const newItem = {
-          id: String(nextId),
-          image: imgPath,
-          prompt: prompt
-        };
-        promptsData.push(newItem);
-
-        // Encode UTF-8 to Base64
-        const updatedJsonStr = JSON.stringify(promptsData, null, 2);
-        const jsonBase64 = btoa(unescape(encodeURIComponent(updatedJsonStr)));
-
-        // 5. Salvar prompts.json no GitHub
-        const jsonPutRes = await fetch(`https://api.github.com/repos/${repo}/contents/prompts.json`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/vnd.github+json'
-          },
-          body: JSON.stringify({
-            message: `Adiciona prompt #${nextId} via Web`,
-            content: jsonBase64,
-            sha: jsonSha
-          })
-        });
-
-        if (!jsonPutRes.ok) {
-          const err = await jsonPutRes.json();
-          throw new Error('Falha ao atualizar prompts.json: ' + (err.message || jsonPutRes.statusText));
-        }
-
-        // Sucesso! Atualiza visual na hora
-        render(promptsData);
-        closeUploadModal();
-        showToast(`Arte #${nextId} publicada com sucesso!`);
-
-      } catch (err) {
-        console.error(err);
-        alert('Erro ao publicar: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i><span>Publicar no Vault</span>`;
-      }
+    function hideBanner(containerId) {
+      document.getElementById(containerId).classList.add('hidden');
     }
 
     loadPrompts();
