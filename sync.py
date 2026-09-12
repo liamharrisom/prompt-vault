@@ -16,7 +16,7 @@ def main():
         print(f"Pasta {SRC_DIR} não encontrada!")
         return
 
-    # 1. Carrega dados existentes para NÃO perder o #1
+    # 1. Carrega dados existentes para manter o #1 (Junji Ito) intacto
     existing_data = {}
     if os.path.exists(JSON_FILE):
         try:
@@ -31,26 +31,25 @@ def main():
     
     final_prompts = []
 
-    # Se já tínhamos o #1 salvo e bom, garante ele na lista
+    # Protege o #1
     if "1" in existing_data:
         final_prompts.append(existing_data["1"])
-        print("✔ Item #1 (Junji Ito original) mantido e protegido!")
+        print("✔ #1 (Junji Ito original) protegido!")
 
-    print(f"Processando novos itens de 2 em diante...")
+    print(f"\nIniciando sincronização em massa de {len(ids)} itens...")
 
     for item_id in ids:
-        # Pula o 1 porque já preservamos o original
         if item_id == 1:
             continue
 
-        # Acha a imagem (.jpeg, .jpg, .png, .webp, etc)
+        # Acha a imagem
         img_name = next((f"{item_id}{ext}" for ext in [".jpeg", ".jpg", ".png", ".webp", ".JPEG", ".JPG", ".PNG"] if f"{item_id}{ext}" in files), None)
         
-        # Acha o arquivo de texto
+        # Acha o texto
         txt_name = f"{item_id}.txt" if f"{item_id}.txt" in files else (str(item_id) if str(item_id) in files else None)
 
         if not img_name or not txt_name:
-            print(f"Pulei o #{item_id}: falta imagem ou texto.")
+            print(f"⚠ Pulei o #{item_id}: falta imagem ou texto correspondente.")
             continue
 
         # Copia imagem para a pasta do repositório
@@ -65,25 +64,26 @@ def main():
             "image": f"images/{img_name}",
             "prompt": prompt_content
         })
-        print(f"✔ Arte #{item_id} processada com sucesso!")
+        print(f"✔ Arte #{item_id} processada!")
 
-    # Ordena pelo ID numérico
+    # Ordena todos numericamente de 1 a 68
     final_prompts.sort(key=lambda x: int(x["id"]) if x["id"].isdigit() else 9999)
 
     # Salva prompts.json
     with open(JSON_FILE, "w", encoding="utf-8") as f:
         json.dump(final_prompts, f, ensure_ascii=False, indent=2)
 
-    print(f"\n✔ Total de {len(final_prompts)} artes gravadas no prompts.json!")
+    print(f"\n✨ Total de {len(final_prompts)} artes catalogadas com sucesso!")
 
     # Git push
     try:
+        print("\nEnviando o caminhão de artes pro GitHub...")
         subprocess.run(["git", "add", "."], cwd=REPO_DIR, check=True)
-        subprocess.run(["git", "commit", "-m", f"Adiciona artes do 2 ao {max(ids)}"], cwd=REPO_DIR, check=True)
+        subprocess.run(["git", "commit", "-m", f"Adiciona lote completo até a arte #{max(ids)}"], cwd=REPO_DIR, check=True)
         subprocess.run(["git", "push"], cwd=REPO_DIR, check=True)
-        print("\n🚀 SUCESSO ABSOLUTO! Artes do 2 ao 10 enviadas pro GitHub!")
-    except subprocess.CalledProcessError:
-        print("\nNenhuma alteração detectada para enviar.")
+        print("\n🚀 SUCESSO TOTAL! Todas as artes já estão voando pro site!")
+    except subprocess.CalledProcessError as e:
+        print(f"\nAviso no Git: {e}")
 
 if __name__ == "__main__":
     main()
