@@ -7,48 +7,55 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+    body { font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen pb-16">
+<body class="bg-[#f9f9f9] text-zinc-900 min-h-screen pb-20">
 
   <!-- NOTIFICAÇÃO AO COPIAR -->
-  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-200 bg-amber-400 text-slate-950 font-bold px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2 text-sm">
-    <i class="fa-solid fa-check"></i>
-    <span>Prompt copiado!</span>
+  <div id="toast" class="fixed bottom-6 left-6 z-50 transform translate-y-20 opacity-0 transition-all duration-200 bg-zinc-900 text-white font-medium px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3 text-sm">
+    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span>Prompt copiado com sucesso!</span>
   </div>
 
-  <!-- BARRA DO TOPO -->
-  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded bg-amber-500 flex items-center justify-center text-slate-950 font-black text-sm">
-          PV
+  <!-- HEADER YOUTUBE -->
+  <header class="border-b border-zinc-200 bg-white sticky top-0 z-40 px-6 py-2.5">
+    <div class="max-w-[1700px] mx-auto flex items-center justify-between gap-6">
+      
+      <!-- LOGO -->
+      <div class="flex items-center gap-2 cursor-pointer select-none">
+        <div class="w-9 h-6 bg-red-600 rounded-md flex items-center justify-center text-white shadow-sm">
+          <i class="fa-solid fa-play text-xs ml-0.5"></i>
         </div>
-        <span class="font-bold tracking-wide text-sm hidden sm:inline text-slate-200">PROMPT VAULT</span>
+        <span class="font-bold tracking-tight text-lg text-zinc-900">Prompt<span class="text-zinc-500 font-normal ml-1">Vault</span></span>
       </div>
 
-      <!-- CAMPO DE BUSCA -->
-      <div class="flex-1 max-w-md relative">
-        <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-500 text-xs"></i>
-        <input type="text" id="searchInput" placeholder="Filtrar por tag (#Bengus, #Aquarela)..." 
-               class="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-amber-500">
+      <!-- BUSCA -->
+      <div class="flex-1 max-w-2xl flex items-center justify-center">
+        <div class="w-full flex items-center border border-zinc-300 rounded-full overflow-hidden focus-within:border-blue-600 transition shadow-inner bg-white">
+          <input type="text" id="searchInput" placeholder="Pesquisar por tag (#Bengus, #Aquarela)..." 
+                 class="w-full text-zinc-900 text-sm px-5 py-2.5 focus:outline-none bg-transparent">
+          <button class="bg-zinc-100 hover:bg-zinc-200 border-l border-zinc-300 px-6 py-2.5 text-zinc-600 transition">
+            <i class="fa-solid fa-search text-xs"></i>
+          </button>
+        </div>
       </div>
+
+      <div class="w-9 hidden sm:block"></div>
     </div>
   </header>
 
-  <!-- GRID ESTILO YOUTUBE -->
-  <main class="max-w-7xl mx-auto px-4 py-6">
-    <div id="feedGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-      <!-- Cards serão injetados via JavaScript -->
+  <!-- GRID EXPANDIDO (CARDS GRANDES: 2 a 3 COLUNAS) -->
+  <main class="max-w-[1700px] mx-auto px-6 py-8">
+    <div id="feedGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-8">
+      <!-- Cards renderizados via JS -->
     </div>
   </main>
 
   <script>
     let promptsData = [];
 
-    // Carregar os dados do prompts.json
     async function loadPrompts() {
       try {
         const response = await fetch('./prompts.json');
@@ -56,46 +63,45 @@
         render(promptsData);
       } catch (err) {
         document.getElementById('feedGrid').innerHTML = `
-          <div class="col-span-full py-12 text-center text-slate-500 text-sm">
-            Nenhum prompt encontrado ou erro ao carregar prompts.json.
+          <div class="col-span-full py-12 text-center text-zinc-400 text-sm">
+            Nenhum prompt encontrado ou erro ao ler prompts.json.
           </div>`;
       }
     }
 
-    // Renderizar o feed estilo YouTube
     function render(items) {
       const grid = document.getElementById('feedGrid');
       grid.innerHTML = '';
 
       if (items.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 text-sm">Nenhuma arte encontrada.</div>`;
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-zinc-400 text-sm">Nenhuma arte encontrada.</div>`;
         return;
       }
 
       items.forEach((item, index) => {
         const card = document.createElement('div');
-        card.className = "flex flex-col bg-slate-900/40 rounded-xl overflow-hidden border border-slate-800/60 hover:border-slate-700 transition";
+        card.className = "flex flex-col bg-white rounded-2xl p-3 border border-zinc-200 shadow-sm hover:shadow-md transition-shadow";
 
         card.innerHTML = `
-          <!-- THUMBNAIL 16:9 (ABRE EM NOVA ABA) -->
-          <a href="${item.image}" target="_blank" rel="noopener noreferrer" class="relative block w-full aspect-video bg-slate-950 overflow-hidden group">
-            <img src="${item.image}" alt="Arte" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onerror="this.src='https://placehold.co/640x360/1e293b/94a3b8?text=Suba+a+Imagem+no+Git'">
-            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
-              <span class="opacity-0 group-hover:opacity-100 transition bg-slate-950/80 text-slate-200 text-[11px] px-2 py-1 rounded backdrop-blur border border-slate-700">
-                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Abrir Original
+          <!-- THUMBNAIL 16:9 GRANDE -->
+          <a href="${item.image}" target="_blank" rel="noopener noreferrer" class="relative block w-full aspect-video bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200/80 group">
+            <img src="${item.image}" alt="Arte" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" onerror="this.src='https://placehold.co/800x450/f4f4f5/71717a?text=Suba+a+Imagem+no+Git'">
+            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition flex items-center justify-center">
+              <span class="opacity-0 group-hover:opacity-100 transition bg-zinc-900/85 text-white text-xs font-medium px-3 py-1.5 rounded-lg backdrop-blur shadow-lg">
+                <i class="fa-solid fa-arrow-up-right-from-square text-[11px] mr-1.5"></i> Abrir Imagem Original
               </span>
             </div>
           </a>
 
-          <!-- RODAPÉ ENXUTO: TAGS + BOTÃO COPIAR -->
-          <div class="p-3 flex items-center justify-between gap-2">
-            <!-- Tags -->
-            <div class="flex flex-wrap gap-1">
-              ${item.tags.map(t => `<span class="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2 py-0.5 rounded">#${t}</span>`).join('')}
+          <!-- RODAPÉ: TAGS + BOTÃO COPIAR -->
+          <div class="mt-3.5 px-1 flex items-center justify-between gap-3">
+            <!-- Chips de Tags -->
+            <div class="flex flex-wrap gap-1.5">
+              ${item.tags.map(t => `<span class="text-xs font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 px-2.5 py-1 rounded-md border border-zinc-200 transition">#${t}</span>`).join('')}
             </div>
 
-            <!-- Botão Copiar -->
-            <button onclick="copyPrompt(${index})" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 transition shrink-0">
+            <!-- Botão Copiar Estilo YouTube -->
+            <button onclick="copyPrompt(${index})" class="bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-white font-medium text-xs px-4 py-2 rounded-full flex items-center gap-1.5 transition shadow-sm shrink-0">
               <i class="fa-regular fa-copy"></i>
               <span>Copiar</span>
             </button>
@@ -105,7 +111,6 @@
       });
     }
 
-    // Função de copiar
     function copyPrompt(index) {
       const text = promptsData[index].prompt;
       navigator.clipboard.writeText(text).then(() => {
@@ -119,7 +124,6 @@
       });
     }
 
-    // Busca em tempo real por tags ou texto
     document.getElementById('searchInput').addEventListener('input', (e) => {
       const q = e.target.value.toLowerCase();
       const filtered = promptsData.filter(item => 
